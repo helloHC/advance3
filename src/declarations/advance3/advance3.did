@@ -1,0 +1,118 @@
+type Wallet_center = 
+ service {
+   getAllCanister: () -> (Set) query;
+   getFoundation: () -> (Set) query;
+   getProposals: () -> (Trie) query;
+   propose: (Operations, opt principal, opt nat8) -> ();
+   vote: (nat, bool) -> ();
+ };
+type Trie_1 = 
+ variant {
+   branch: Branch_1;
+   "empty";
+   leaf: Leaf_1;
+ };
+type Trie = 
+ variant {
+   branch: Branch;
+   "empty";
+   leaf: Leaf;
+ };
+type Set = 
+ variant {
+   branch: Branch_1;
+   "empty";
+   leaf: Leaf_1;
+ };
+type Proposal = 
+ record {
+   approvers: List;
+   canisterID: opt principal;
+   done: bool;
+   isApprover: bool;
+   operation: Operations;
+   proposer: principal;
+   refusers: List;
+   wasmCode: opt nat8;
+ };
+type Operations = 
+ variant {
+   addRestriction;
+   create;
+   delete;
+   install;
+   removeRestriction;
+   start;
+   stop;
+ };
+type List_2 = 
+ opt record {
+       record {
+         Key_1;
+         null;
+       };
+       List_2;
+     };
+type List_1 = 
+ opt record {
+       record {
+         Key;
+         Proposal;
+       };
+       List_1;
+     };
+type List = 
+ opt record {
+       principal;
+       List;
+     };
+type Leaf_1 = 
+ record {
+   keyvals: AssocList_1;
+   size: nat;
+ };
+type Leaf = 
+ record {
+   keyvals: AssocList;
+   size: nat;
+ };
+type Key_1 = 
+ record {
+   hash: Hash;
+   key: principal;
+ };
+type Key = 
+ record {
+   hash: Hash;
+   key: nat;
+ };
+type Hash = nat32;
+type Branch_1 = 
+ record {
+   left: Trie_1;
+   right: Trie_1;
+   size: nat;
+ };
+type Branch = 
+ record {
+   left: Trie;
+   right: Trie;
+   size: nat;
+ };
+type AssocList_1 = 
+ opt record {
+       record {
+         Key_1;
+         null;
+       };
+       List_2;
+     };
+type AssocList = 
+ opt record {
+       record {
+         Key;
+         Proposal;
+       };
+       List_1;
+     };
+service : (nat, nat, vec principal) -> Wallet_center
