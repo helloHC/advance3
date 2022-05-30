@@ -58,20 +58,61 @@ actor class Wallet_center (_threshold: Nat, _total: Nat, members: [Principal]) =
     public shared ({ caller }) func propose(operation: Types.Operations, canisterID: ?Principal, wasmCode: ?Nat8) : async () {
         assert(isMember(caller));
 
-        if(operation == #addRestriction) {
-            assert(not hasCanister(canisterRestrictionSet, canisterID));
+        switch(operation) {
+            case(#addRestriction) {
+                assert(not hasCanister(canisterRestrictionSet, canisterID));
+                pushPropose(caller, operation, canisterID, wasmCode);
+            };
+            case(#removeRestriction) {
+                assert(hasCanister(canisterRestrictionSet, canisterID));
+                pushPropose(caller, operation, canisterID, wasmCode);
+            };
+            case(#create) {
+                pushPropose(caller, operation, canisterID, wasmCode);
+            };
+            case(_) {
+                if(hasCanister(canisterRestrictionSet, canisterID)) {
+                    pushPropose(caller, operation, canisterID, wasmCode);
+                } else {
+                    let ic : IC.Self = actor("aaaa-aa");
+                    switch(operation) {
+                        case (#install) {
+                            await ic.install_code({
+                                arg = [];
+                                wasm_module = [Option.unwrap(wasmCode)];
+                                mode = #install;
+                                canister_id = Option.unwrap(canisterID);
+                            });
+                        };
+                        case (#start) {
+                            await ic.start_canister({
+                                canister_id = Option.unwrap(canisterID);
+                            });
+                        };
+                        case (#stop) {
+                            await ic.stop_canister({
+                                canister_id = Option.unwrap(canisterID);
+                            });
+                        };
+                        case (#delete) {
+                            await ic.delete_canister({
+                                canister_id = Option.unwrap(canisterID);
+                            });
+                        };
+                        case(_) {};
+                    };
+                }
+            };
         };
+    };
 
-        if(operation == #removeRestriction) {
-            assert(hasCanister(canisterRestrictionSet, canisterID));
-        };
-        
+    func pushPropose(caller: Principal, operation: Types.Operations, _canisterID: ?Principal, _wasmCode: ?Nat8) {
         proposalsID += 1;
         proposals := Trie.put(proposals, { hash = Hash.hash(proposalsID); key = proposalsID}, Nat.equal, {
             proposer = caller;
-            wasmCode = wasmCode;
+            wasmCode = _wasmCode;
             operation = operation;
-            canisterID = canisterID;
+            canisterID = _canisterID;
             approvers = List.nil<Principal>();
             refusers = List.nil<Principal>();
             isApprover = false;
