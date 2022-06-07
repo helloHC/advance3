@@ -156,7 +156,7 @@ actor class Wallet_center (_threshold: Nat, _total: Nat, members: [Principal]) =
 
     //执行提案
     func operate(proposal: Types.Proposal) : async () {
-        let ic : IC.Self = actor("aaaa-aa");
+        let ic : IC.Self = actor("aaaaa-aa");
         switch(proposal.operation) {
             case (#create) {
                 Cycles.add(1_000_000_000_000);
